@@ -1,0 +1,21 @@
+version: '3.8'
+
+services:
+  mssql_server:
+    image: customsqlserver:2019
+    environment:
+      - ACCEPT_EULA=Y
+      - SA_PASSWORD=Password123
+    volumes:
+      - E:/UserData:/var/opt/mssql/data
+      - E:/Log:/var/opt/mssql/log
+      - E:/Backup:/var/opt/mssql/backup
+      - E:/:/var/opt/mssql
+    ports:
+      - "1433:1433"
+    networks:
+      - sql_network
+
+networks:
+  sql_network:
+    external: true
