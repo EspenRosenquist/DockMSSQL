@@ -1,9 +1,10 @@
 version: '3.8'
 #https://learn.microsoft.com/en-us/sql/linux/sql-server-linux-containers-ad-auth-adutil-tutorial?view=sql-server-ver16#create-the-config-files-to-be-used-by-the-sql-server-container
 
+# image names must be lowercase
 services:
   mssql_server:
-    image: SQLserver:2019
+    image: dev_sqlserver:2019
     environment:
       - ACCEPT_EULA=Y
       - SA_PASSWORD=Password123
@@ -25,7 +26,7 @@ services:
     networks:
       - sql_network
 
-# Creates named columes to persist our data
+# Creates named volumes to persist our data
 volumes: 
   user_DB_data:
   user_DB_log:
