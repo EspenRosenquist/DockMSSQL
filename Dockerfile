@@ -3,7 +3,7 @@ FROM mcr.microsoft.com/mssql/server:2019-latest-ubuntu
 
 # Set environment variables for SQL Server
 ENV ACCEPT_EULA=Y
-ENV SA_PASSWORD=YourPasswordHere
+ENV SA_PASSWORD=Password123
 ENV PATH="/opt/ssis/bin:${PATH}"
 
 # Update the system and install necessary tools
@@ -24,6 +24,9 @@ RUN /opt/ssis/bin/ssis-conf -n setup && ssis-conf unattended
 
 # Expose SQL Server port
 EXPOSE 1433
+
+# Set the default log directory
+RUN /opt/mssql/bin/mssql-conf set filelocation.defaultlogdir /var/opt/mssql/log
 
 # Command to run SQL Server
 CMD ["sqlservr"]
