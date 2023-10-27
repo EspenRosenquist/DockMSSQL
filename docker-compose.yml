@@ -1,20 +1,36 @@
 version: '3.8'
+#https://learn.microsoft.com/en-us/sql/linux/sql-server-linux-containers-ad-auth-adutil-tutorial?view=sql-server-ver16#create-the-config-files-to-be-used-by-the-sql-server-container
 
 services:
   mssql_server:
-    image: customsqlserver:2019
+    image: SQLserver:2019
     environment:
       - ACCEPT_EULA=Y
       - SA_PASSWORD=Password123
     volumes:
-      - E:/UserData:/var/opt/mssql/data
-      - E:/Log:/var/opt/mssql/log
-      - E:/Backup:/var/opt/mssql/backup
-      - E:/:/var/opt/mssql
+      - type: volume
+        source: user_DB_data
+        target: /var/opt/mssql/data
+      - type: volume
+        source: user_DB_log
+        target: /var/opt/mssql/log
+      - type: volume
+        source: data_root
+        target: /var/opt/mssql
+      - type: volume
+        source: backup
+        target: /var/opt/mssql/log 
     ports:
       - "1433:1433"
     networks:
       - sql_network
+
+# Creates named columes to persist our data
+volumes: 
+  user_DB_data:
+  user_DB_log:
+  data_root:
+  backup:
 
 networks:
   sql_network:
