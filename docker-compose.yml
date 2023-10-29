@@ -1,26 +1,32 @@
 version: '3.8'
 #https://learn.microsoft.com/en-us/sql/linux/sql-server-linux-containers-ad-auth-adutil-tutorial?view=sql-server-ver16#create-the-config-files-to-be-used-by-the-sql-server-container
+# https://stackoverflow.com/questions/65601077/unable-to-run-sql-server-2019-docker-with-volumes-and-get-error-setup-failed-co
+
 
 # image names must be lowercase
 services:
   mssql_server:
     image: dev_sqlserver:2019
+    user: root
     environment:
       - ACCEPT_EULA=Y
       - SA_PASSWORD=Password123
     volumes:
       - type: volume
-        source: user_DB_data
+        source: ./mssql/data
         target: /var/opt/mssql/data
       - type: volume
-        source: user_DB_log
+        source: ./mssql/log
         target: /var/opt/mssql/log
       - type: volume
-        source: data_root
+        source: ./
         target: /var/opt/mssql
       - type: volume
-        source: backup
+        source: ./backup
         target: /var/opt/mssql/log 
+      - type: volume
+        source: ./mssql/secrets
+        target: /var/opt/mssql/secrets
     ports:
       - "1433:1433"
     networks:
