@@ -5,25 +5,18 @@ version: '3.8'
 # image names must be lowercase
 services:
   mssql_server:
+    container_name: mssql_server
     image: dev_sqlserver:2019
+    restart: always
     user: mssql
     env_file: .env
     environment:
       - PATH=${SQL_PATH}:${PATH}
     volumes:
-      - type: volume
-        # the volume name
-        source: data
-        target: ${SQL_SERVER_ROOT}/data
-      - type: volume
-        source: log
-        target: ${SQL_SERVER_ROOT}/log
-      - type: volume
-        source: backup
-        target: ${SQL_SERVER_ROOT}/backup
-      - type: volume
-        source: secrets
-        target: ${SQL_SERVER_ROOT}/secrets
+      - data:/var/opt/mssql/data
+      - log:/var/opt/mssql/log
+      - backup:/var/opt/mssql/backup
+      - secrets:/var/opt/mssql/secrets
     ports:
       - 0.0.0.0:1433:1433
     networks:

@@ -9,8 +9,15 @@ FROM mcr.microsoft.com/mssql/server:2019-latest
 # Switch to user root for permission changes
 USER root
 
+# Create directories
+RUN mkdir -p -m 770 /var/opt/mssql/data && \
+    mkdir -p -m 770 /var/opt/mssql/log && \
+    mkdir -p -m 770 /var/opt/mssql/backup && \
+    mkdir -p -m 770 /var/opt/mssql/secrets
+RUN chgrp -R 0 /var/opt/mssql
+
 # Update permissions for mssql user
-RUN mkdir -p -m 770 /var/opt/mssql && chgrp -R 0 /var/opt/mssql
+RUN chown -R mssql /var/opt/mssql
 
 # Grant sql the permissions to connect to ports <1024 as a non-root user
 RUN setcap 'cap_net_bind_service+ep' /opt/mssql/bin/sqlservr && \
