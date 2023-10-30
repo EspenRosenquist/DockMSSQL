@@ -1,46 +1,34 @@
+# Installation path of server
+# Default: /opt/mssql
+# ARG SQL_SERVER_ROOT=/opt/mssql
+
+# https://github.com/microsoft/mssql-docker/blob/master/linux/preview/examples/mssql-server-linux-non-root/Dockerfile-2019
 # Use the official Microsoft SQL Server 2019 Linux image as a starting point
 FROM mcr.microsoft.com/mssql/server:2019-latest
 
-# Set environment variables for SQL Server
-ENV ACCEPT_EULA=Y
-ENV SA_PASSWORD=Password123
-ENV PATH="/opt/ssis/bin:${PATH}"
-
-# If we use volumes, the owner of this directory
-# is root.  So we need to set them to mssql, but
-# at this point they do not yet exist.
-# Create the directory first, and set the permissions.
+# Switch to user root for permission changes
 USER root
-RUN mkdir -p /var/opt/mssql/data
-RUN chown -R mssql: /var/opt/mssql/data
 
-USER mssql
+# Update permissions for mssql user
+RUN mkdir -p -m 770 /var/opt/mssql && chgrp -R 0 /var/opt/mssql
 
-# Update the system and install necessary tools
-USER root
-RUN apt-get update && apt-get install -y curl software-properties-common
+# Grant sql the permissions to connect to ports <1024 as a non-root user
+RUN setcap 'cap_net_bind_service+ep' /opt/mssql/bin/sqlservr && \
+    # Allow dumps from the non-root process
+    setcap 'cap_sys_ptrace+ep' /opt/mssql/bin/paldumper && \
+    setcap 'cap_sys_ptrace+ep' /usr/bin/gdb
 
-# Import the public repository GPG keys
-RUN curl https://packages.microsoft.com/keys/microsoft.asc | apt-key add -
-
-# Register the SQL Server Ubuntu repository
-# SQL Server 2019 does not have SSIS repo for Ubuntu 20.04
-RUN add-apt-repository "$(curl https://packages.microsoft.com/config/ubuntu/20.04/mssql-server-2022.list)"
-
-# Install SQL Server Integration Services
-# It is not possible to run SSIS in a Windows container
-RUN apt-get update 
-RUN apt-get install -y mssql-server-is
-
-# Configure SSIS in silent mode
-# Forego this step for this first installation and rather get the conf file after manual 
-# RUN /opt/ssis/bin/ssis-conf -n setup && ssis-conf unattended
+# Add an ldconfig file because setcap causes the os to remove LD_LIBRARY_PATH
+# and other env variables that control dynamic linking
+RUN mkdir -p /etc/ld.so.conf.d && touch /etc/ld.so.conf.d/mssql.conf && \
+    echo -e "# mssql libs\n/opt/mssql/lib" >> /etc/ld.so.conf.d/mssql.conf && \
+    ldconfig
 
 # Expose SQL Server port
 EXPOSE 1433
 
-# Set the default log directory
-# RUN /opt/mssql/bin/mssql-conf set filelocation.defaultlogdir /var/opt/mssql/log
+# Switch back to mssql user for runtime
+USER mssql
 
 # Command to run SQL Server
 CMD ["sqlservr"]

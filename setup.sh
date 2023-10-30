@@ -4,6 +4,7 @@
 docker network create --attachable --driver bridge sql_network
 
 # Build the custom SQL image (assuming you have a Dockerfile in the current directory)
+#docker build --build-arg SQL_SERVER_ROOT=$SQL_SERVER_ROOT -t dev_sqlserver:2019 .
 docker build -t dev_sqlserver:2019 .
 
 # Use docker-compose to deploy (assuming you have a docker-compose.yaml in the current directory)
