@@ -34,8 +34,18 @@ RUN mkdir -p /etc/ld.so.conf.d && touch /etc/ld.so.conf.d/mssql.conf && \
 # Expose SQL Server port
 EXPOSE 1433
 
+# Copy the database setup script to the container
+COPY setup_dwh.sql /tmp/setup_dwh.sql
+
+# Copy the entrypoint script to the container
+COPY entrypoint.sh /tmp/entrypoint.sh
+
+# Grant execute permissions to the entrypoint script
+RUN chmod +x /tmp/entrypoint.sh
+
 # Switch back to mssql user for runtime
 USER mssql
 
 # Command to run SQL Server
-CMD ["sqlservr"]
+# Use the entrypoint script as the default command to execute
+CMD ["/tmp/entrypoint.sh"]
