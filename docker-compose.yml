@@ -23,15 +23,17 @@ services:
     networks:
       - sql_network
   sqlserver.configurator:
-    image: mcr.microsoft.com/mssql/server:2019-latest
+    image: dev_sqlserver:2019
     volumes:
       - ./init:/docker-entrypoint-initdb.d
     depends_on:
       mssql_server:
         condition: service_healthy
+    networks:
+      - sql_network
     command: >
       bash -c '
-      /opt/mssql-tools/bin/sqlcmd -S sqlserver -U sa -P ${MSSQL_SA_PASSWORD} -d master -i docker-entrypoint-initdb.d/init.sql;
+      /opt/mssql-tools/bin/sqlcmd -S sql_network -U SA -P ${MSSQL_SA_PASSWORD} -d master -i docker-entrypoint-initdb.d/setup_dwh.sql;
       echo "Data warehouse skeleton created!";
       '
 
