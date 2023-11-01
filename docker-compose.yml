@@ -1,5 +1,5 @@
 version: '3.8'
-#https://learn.microsoft.com/en-us/sql/linux/sql-server-linux-containers-ad-auth-adutil-tutorial?view=sql-server-ver16#create-the-config-files-to-be-used-by-the-sql-server-container
+# https://learn.microsoft.com/en-us/sql/linux/sql-server-linux-containers-ad-auth-adutil-tutorial?view=sql-server-ver16#create-the-config-files-to-be-used-by-the-sql-server-container
 # https://stackoverflow.com/questions/65601077/unable-to-run-sql-server-2019-docker-with-volumes-and-get-error-setup-failed-co
 
 # image names must be lowercase
@@ -13,21 +13,19 @@ services:
     environment:
       - PATH=${SQL_PATH}:${PATH}
     volumes:
-      - data:/var/opt/mssql/data
-      - log:/var/opt/mssql/log
-      - backup:/var/opt/mssql/backup
-      - secrets:/var/opt/mssql/secrets
+      - ./mssql/data:/var/opt/mssql/data
+      - ./mssql/log:/var/opt/mssql/log
+      - ./mssql/backup:/var/opt/mssql/backup
+      - ./mssql/secrets:/var/opt/mssql/secrets
+    healthcheck:
+      test: [ "CMD-SHELL", "/opt/mssql-tools/bin/sqlcmd -S localhost -U sa -P Secret1234 -Q 'SELECT 1' || exit 1" ]
+      interval: 10s
+      timeout: 3s
+      retries: 10
     ports:
-      - 0.0.0.0:1433:1433
+      - 1433:1433
     networks:
       - sql_network
-
-# Creates named volumes to persist our data
-volumes: 
-  data:
-  log:
-  backup:
-  secrets:
 
 networks:
   sql_network:
