@@ -2,8 +2,12 @@ version: '3.8'
 
 services:
   mssql_server:
+    container_name: mssql_server
     image: dev_sqlserver:2019
-    # restart: unless-stopped
+    build:
+      context: .
+      dockerfile: ./Dockerfiles/mssql-Dockerfile
+    restart: unless-stopped
     user: mssql
     env_file: .env
     environment:
@@ -22,7 +26,9 @@ services:
       - 1433:1433
     networks:
       - sql_network
+  
   sqlserver.configurator:
+    container_name: mssql_configurator
     image: dev_sqlserver:2019
     volumes:
       - ./init:/docker-entrypoint-initdb.d
@@ -33,10 +39,26 @@ services:
       - sql_network
     command: >
       bash -c '
-      /opt/mssql-tools/bin/sqlcmd -S sql_network -U SA -P ${MSSQL_SA_PASSWORD} -d master -i docker-entrypoint-initdb.d/setup_dwh.sql;
+      /opt/mssql-tools/bin/sqlcmd -S mssql_server -U SA -P ${MSSQL_SA_PASSWORD} -d master -i docker-entrypoint-initdb.d/setup_dwh.sql;
       echo "Data warehouse skeleton created!";
       '
+  ssb_service:
+    build:
+      context: .
+      dockerfile: ./Dockerfiles/SSB-Dockerfile
+    volumes:
+      - ./ssb_data:/ssb_data
+      - ./scripts:/scripts
+    networks:
+      - sql_network
+    depends_on:
+      mssql_server:
+        condition: service_healthy
 
 networks:
   sql_network:
     external: true
+
+volumes:
+  ssb_data:
+  scripts:
