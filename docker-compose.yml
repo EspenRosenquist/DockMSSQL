@@ -42,18 +42,18 @@ services:
       /opt/mssql-tools/bin/sqlcmd -S mssql_server -U SA -P ${MSSQL_SA_PASSWORD} -d master -i docker-entrypoint-initdb.d/setup_dwh.sql;
       echo "Data warehouse skeleton created!";
       '
-  ssb_service:
-    build:
-      context: .
-      dockerfile: ./Dockerfiles/SSB-Dockerfile
-    volumes:
-      - ./ssb_data:/ssb_data
-      - ./scripts:/scripts
-    networks:
-      - sql_network
-    depends_on:
-      mssql_server:
-        condition: service_healthy
+#  ssb_service:
+#    build:
+#      context: .
+#      dockerfile: ./Dockerfiles/SSB-Dockerfile
+#    volumes:
+#      - ./ssb_data:/ssb_data
+#      - ./scripts:/scripts
+#    networks:
+#      - sql_network
+#    depends_on:
+#      mssql_server:
+#        condition: service_healthy
 
 networks:
   sql_network:
