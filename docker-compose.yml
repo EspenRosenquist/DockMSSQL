@@ -18,7 +18,7 @@ services:
       - backup:/var/opt/mssql/backup
       - secrets:/var/opt/mssql/secrets
     ports:
-      - 0.0.0.0:1433:1433
+      - 1433:1433
     networks:
       - sql_network
 
