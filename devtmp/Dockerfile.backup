@@ -7,13 +7,14 @@
 FROM mcr.microsoft.com/mssql/server:2019-latest
 
 # Switch to user root for permission changes
-USER root
+ USER root
 
-# Create directories
+# Create directories - this was only necessary for named volumes in the docker - now I use bind.
 RUN mkdir -p -m 770 /var/opt/mssql/data && \
     mkdir -p -m 770 /var/opt/mssql/log && \
     mkdir -p -m 770 /var/opt/mssql/backup && \
     mkdir -p -m 770 /var/opt/mssql/secrets
+    
 RUN chgrp -R 0 /var/opt/mssql
 
 # Update permissions for mssql user

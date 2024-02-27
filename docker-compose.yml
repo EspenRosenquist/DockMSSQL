@@ -1,34 +1,64 @@
 version: '3.8'
-#https://learn.microsoft.com/en-us/sql/linux/sql-server-linux-containers-ad-auth-adutil-tutorial?view=sql-server-ver16#create-the-config-files-to-be-used-by-the-sql-server-container
-# https://stackoverflow.com/questions/65601077/unable-to-run-sql-server-2019-docker-with-volumes-and-get-error-setup-failed-co
 
-# image names must be lowercase
 services:
   mssql_server:
     container_name: mssql_server
     image: dev_sqlserver:2019
-    restart: always
+    build:
+      context: .
+      dockerfile: ./Dockerfiles/mssql-Dockerfile
+    restart: unless-stopped
     user: mssql
     env_file: .env
     environment:
       - PATH=${SQL_PATH}:${PATH}
     volumes:
-      - data:/var/opt/mssql/data
-      - log:/var/opt/mssql/log
-      - backup:/var/opt/mssql/backup
-      - secrets:/var/opt/mssql/secrets
+      - ./mssql/data:/var/opt/mssql/data
+      - ./mssql/log:/var/opt/mssql/log
+      - ./mssql/backup:/var/opt/mssql/backup
+      - ./mssql/secrets:/var/opt/mssql/secrets
+    healthcheck:
+      test: [ "CMD-SHELL", "/opt/mssql-tools/bin/sqlcmd -S localhost -U sa -P ${MSSQL_SA_PASSWORD} -Q 'SELECT 1' || exit 1" ]
+      interval: 10s
+      timeout: 3s
+      retries: 10
     ports:
       - 1433:1433
     networks:
       - sql_network
-
-# Creates named volumes to persist our data
-volumes: 
-  data:
-  log:
-  backup:
-  secrets:
+  
+  sqlserver.configurator:
+    container_name: mssql_configurator
+    image: dev_sqlserver:2019
+    volumes:
+      - ./init:/docker-entrypoint-initdb.d
+    depends_on:
+      mssql_server:
+        condition: service_healthy
+    networks:
+      - sql_network
+    command: >
+      bash -c '
+      /opt/mssql-tools/bin/sqlcmd -S mssql_server -U SA -P ${MSSQL_SA_PASSWORD} -d master -i docker-entrypoint-initdb.d/setup_dwh.sql;
+      echo "Data warehouse skeleton created!";
+      '
+#  ssb_service:
+#    build:
+#      context: .
+#      dockerfile: ./Dockerfiles/SSB-Dockerfile
+#    volumes:
+#      - ./ssb_data:/ssb_data
+#      - ./scripts:/scripts
+#    networks:
+#      - sql_network
+#    depends_on:
+#      mssql_server:
+#        condition: service_healthy
 
 networks:
   sql_network:
     external: true
+
+volumes:
+  ssb_data:
+  scripts:

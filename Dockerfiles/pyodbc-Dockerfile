@@ -1,0 +1,29 @@
+# Use Python on Alpine Linux
+FROM python:3.9-alpine
+
+# Install dependencies required for compiling pyodbc and UnixODBC
+RUN apk add --no-cache gcc musl-dev unixodbc-dev
+
+# Install the Microsoft ODBC Driver for SQL Server (Linux)
+RUN apk add --no-cache gnupg openssl curl && \
+    curl -O https://download.microsoft.com/download/e/3/c/e3c1c3e3-f7a7-4581-aeea-5d8a634af0ba/msodbcsql17_17.7.2.1-1_amd64.apk && \
+    curl -O https://download.microsoft.com/download/e/3/c/e3c1c3e3-f7a7-4581-aeea-5d8a634af0ba/msodbcsql17_17.7.2.1-1_amd64.sig && \
+    curl https://packages.microsoft.com/keys/microsoft.asc  | gpg --import - && \
+    gpg --verify msodbcsql17_17.7.2.1-1_amd64.sig msodbcsql17_17.7.2.1-1_amd64.apk && \
+    apk add --allow-untrusted msodbcsql17_17.7.2.1-1_amd64.apk
+
+# Remove unnecessary packages and cache
+RUN apk del gnupg openssl curl && \
+    rm -f msodbcsql17_17.7.2.1-1_amd64.apk msodbcsql17_17.7.2.1-1_amd64.sig
+
+# Install pyodbc
+RUN pip install pyodbc
+
+# Copy the Python scripts
+COPY ./scripts /scripts
+
+# Set the working directory
+WORKDIR /scripts
+
+# By default, run a script
+# CMD ["python", "your_script.py"]

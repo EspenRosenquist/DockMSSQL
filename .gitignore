@@ -17,4 +17,9 @@ stats.json
 # Artifacts from running npm install
 **/npm-debug.log
 
+# For this I want to include all environment variables set
 !.env
+
+# Do not track the actual contents
+mssql/
+tmp/
