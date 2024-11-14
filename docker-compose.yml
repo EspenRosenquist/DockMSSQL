@@ -3,7 +3,7 @@ version: '3.8'
 services:
   mssql_server:
     container_name: mssql_server
-    image: dev_sqlserver:2019
+    image: dev_sqlserver:latest
     build:
       context: .
       dockerfile: ./Dockerfiles/mssql-Dockerfile
