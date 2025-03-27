@@ -1,5 +1,3 @@
-version: '3.8'
-
 services:
   mssql_server:
     container_name: mssql_server
@@ -29,7 +27,7 @@ services:
   
   sqlserver.configurator:
     container_name: mssql_configurator
-    image: dev_sqlserver:2019
+    image: dev_sqlserver:latest
     volumes:
       - ./init:/docker-entrypoint-initdb.d
     depends_on:
